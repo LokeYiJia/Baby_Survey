@@ -78,3 +78,12 @@ input:focus-visible, button:focus-visible { outline: 3px solid #f0b53a; outline-
 @media (max-width: 800px) { .page-shell { padding: 0; } .survey { padding: 20px 14px; border-radius: 0; } .hero { grid-template-columns: minmax(0, 1fr) 230px; min-height: 250px; } .hero-family { height: 260px; margin-right: -14px; } .form-grid > .card, .form-grid > .section-7, .form-grid > .section-8 { grid-column: 1 / -1; } }
 @media (max-width: 520px) { .hero { grid-template-columns: 1fr; } .hero-family { height: 300px; margin-right: 0; } .card-with-picture { grid-template-columns: 1fr; } .card-with-picture .picture-space { min-height: 110px; } .stage-option img { width: 64px; height: 64px; } .stage-choice { font-size: .67rem; } .matrix-head, .matrix-row { grid-template-columns: 1fr 37px 37px; } }
 @media print { .page-shell { padding: 0; } .survey { box-shadow: none; } button, .status { display: none; } }
+.modal-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 18px; background: #251a2299; backdrop-filter: blur(4px); }
+.agent-modal { width: min(500px, 100%); max-height: calc(100vh - 36px); overflow: auto; padding: 26px; border: 1px solid #efc4c7; border-radius: 22px; background: #fffaf8 url("/baby-survey-background.png") top center / cover no-repeat; box-shadow: 0 22px 70px #2b17284d; }
+.agent-modal > h2 { display: inline-block; margin: 0 0 8px; padding: 8px 14px; border-radius: 12px; color: white; background: #dc5168; font-size: 1.15rem; text-transform: uppercase; }
+.agent-modal > p { margin: 0 0 22px; font-size: .88rem; }
+.agent-modal .field { margin-bottom: 16px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.modal-actions button { min-width: 135px; margin: 0; }
+.secondary-button { color: #8b3341; border: 1px solid #dbaab2; background: white; box-shadow: none; }
+.secondary-button:hover:not(:disabled) { color: white; background: #9c5260; }

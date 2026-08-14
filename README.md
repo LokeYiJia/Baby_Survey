@@ -28,22 +28,22 @@ Vite serves the form locally. A complete submission requires the Pages Function 
 
 Create a tab named exactly `Baby Survey Responses`. Put these exact headers in row 1, in order:
 
-1. Date
-2. Full Name
-3. Contact Number
-4. Last 4 Digits of IC
-5. Age
-6. Occupation
-7. Current Stage
-8. Current Week of Pregnancy
-9. Expected Due Date
-10. Baby's Age
-11. Number of Children
-12. Prenatal Protection Check
-13. Main Concerns
-14. Existing Insurance Coverage
-15. Current Insurance Company
-16. Previous Agent Satisfaction
+1. Full Name
+2. Contact Number
+3. Last 4 Digits of IC
+4. Age
+5. Occupation
+6. Current Stage
+7. Current Week of Pregnancy
+8. Expected Due Date
+9. Baby's Age
+10. Number of Children
+11. Parental Protection Check
+12. Main Concerns
+13. Existing Insurance Coverage
+14. Current Insurance Company
+15. Previous Insurance Agent Satisfaction
+16. Submission Timestamp
 
 ## Google Apps Script setup
 
@@ -53,7 +53,15 @@ Create a tab named exactly `Baby Survey Responses`. Put these exact headers in r
 4. Run as the deploying account and select the access level appropriate for public form submissions.
 5. Copy the deployed `/exec` URL.
 
-The script verifies every header, protects against formula injection, preserves the contact number and IC digits as text, and uses a script-wide lock for concurrent submissions. Deploy a new Apps Script version whenever `Code.gs` changes.
+The script generates the submission timestamp on the server using the spreadsheet's `Asia/Kuala_Lumpur` timezone. It also verifies every header, protects against formula injection, preserves the contact number and IC digits as text, and uses a script-wide lock for concurrent submissions. Deploy a new Apps Script version whenever `Code.gs` changes.
+
+## Agent email reports
+
+The final submission popup collects Agent Name, Agent ID, Agent Email, and GM Name. These values route the lead email but are not stored in the 16-column response sheet. Immediately after saving a response, Apps Script sends that lead to the supplied agent email.
+
+After installing `Code.gs`, run `authorizeMailSending` once in the Apps Script editor and approve the requested mail permission.
+
+Email sending uses the deploying Google account's Apps Script daily recipient quota.
 
 ## Cloudflare Pages setup
 

@@ -26,14 +26,20 @@ export async function onRequest({ request, env }) {
     const week = text(data.pregnancyWeek, "pregnancyWeek", false, 2); if (stage === "Currently pregnant" && (!/^\d{1,2}$/.test(week) || +week < 1 || +week > 45)) throw new Error("pregnancyWeek is invalid.");
     const due = text(data.expectedDueDate, "expectedDueDate", false, 10); if (stage === "Currently pregnant" && !/^\d{4}-\d{2}-\d{2}$/.test(due)) throw new Error("expectedDueDate is required.");
     const babyAge = text(data.babyAge, "babyAge", false, 50); if (stage === "Postnatal / newborn stage" && !babyAge) throw new Error("babyAge is required.");
+    const agentName = text(data.agentName, "agentName", true, 100);
+    const agentId = text(data.agentId, "agentId", true, 50);
+    const agentEmail = text(data.agentEmail, "agentEmail", true, 150).toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agentEmail)) throw new Error("agentEmail is invalid.");
+    const gmName = text(data.gmName, "gmName", true, 100);
     if (data.consent !== true) throw new Error("consent must be true.");
     const payload = {
-      date: text(data.date, "date", true, 10), fullName: text(data.fullName, "fullName", true), contactNumber: phone, icLast4,
+      fullName: text(data.fullName, "fullName", true), contactNumber: phone, icLast4,
       ageBand: choice(data.ageBand, "ageBand", AGE_BANDS), occupation: text(data.occupation, "occupation"), currentStage: stage,
       pregnancyWeek: week, expectedDueDate: due, babyAge, numberOfChildren: choice(data.numberOfChildren, "numberOfChildren", CHILD_COUNTS),
       prenatalPreparedness: matrix(data.prenatalPreparedness, "prenatalPreparedness", PRENATAL_ITEMS), mainConcerns: checklist(data.mainConcerns, "mainConcerns", CONCERNS),
       existingCoverage: matrix(data.existingCoverage, "existingCoverage", COVERAGE_ITEMS), currentInsurer: text(data.currentInsurer, "currentInsurer"),
       agentSatisfaction: choice(data.agentSatisfaction, "agentSatisfaction", SATISFACTION),
+      agentName, agentId, agentEmail, gmName,
     };
     if (!env?.GOOGLE_SHEETS_WEBHOOK_URL) return json({ success: false, error: "Submission service is not configured." }, 500);
     let upstream; try { upstream = await fetch(env.GOOGLE_SHEETS_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); } catch { return json({ success: false, error: "Unable to save the survey right now." }, 502); }

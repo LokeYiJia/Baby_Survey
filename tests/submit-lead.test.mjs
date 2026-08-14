@@ -8,7 +8,7 @@ const prenatalPreparedness = {
   "Emergency cesarean section for early delivery": "Yes",
 };
 const existingCoverage = { "Medical card": "Yes", "Life insurance": "Yes", "Critical illness plan": "No", "Investment / savings plan": "No", "Baby insurance plan": "No" };
-const valid = () => ({ date: "2026-08-13", fullName: "Alex Tan", contactNumber: "0123456789", icLast4: "0123", ageBand: "25–30", occupation: "Designer", currentStage: "Currently pregnant", pregnancyWeek: "20", expectedDueDate: "2026-12-20", babyAge: "", numberOfChildren: "0 (First child on the way / planning)", prenatalPreparedness: { ...prenatalPreparedness }, mainConcerns: ["Baby hospitalization expenses"], existingCoverage: { ...existingCoverage }, currentInsurer: "Great Eastern", agentSatisfaction: "Satisfied", consent: true });
+const valid = () => ({ fullName: "Alex Tan", contactNumber: "0123456789", icLast4: "0123", ageBand: "25–30", occupation: "Designer", currentStage: "Currently pregnant", pregnancyWeek: "20", expectedDueDate: "2026-12-20", babyAge: "", numberOfChildren: "0 (First child on the way / planning)", prenatalPreparedness: { ...prenatalPreparedness }, mainConcerns: ["Baby hospitalization expenses"], existingCoverage: { ...existingCoverage }, currentInsurer: "Great Eastern", agentSatisfaction: "Satisfied", consent: true, agentName: "Jamie Lim", agentId: "A123", agentEmail: "jamie@example.com", gmName: "Morgan Lee" });
 const call = (payload = valid(), env = { GOOGLE_SHEETS_WEBHOOK_URL: "https://script.google.test/exec" }) => onRequest({ request: new Request("https://example.test/api/submit-lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }), env });
 
 test("accepts and forwards a valid survey", async (t) => {
@@ -17,6 +17,12 @@ test("accepts and forwards a valid survey", async (t) => {
   t.after(() => { globalThis.fetch = originalFetch; });
   const response = await call(); assert.equal(response.status, 200); assert.deepEqual(await response.json(), { success: true });
   assert.equal(forwarded.contactNumber, "0123456789"); assert.match(forwarded.prenatalPreparedness, /Pregnancy complications coverage: Yes/); assert.equal("consent" in forwarded, false);
+  assert.equal(forwarded.agentEmail, "jamie@example.com");
+});
+
+test("rejects an invalid agent email", async () => {
+  const payload = valid(); payload.agentEmail = "not-an-email";
+  const response = await call(payload); assert.equal(response.status, 400); assert.match((await response.json()).error, /agentEmail/);
 });
 
 test("rejects incomplete Yes/No answers", async () => {

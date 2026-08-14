@@ -33,6 +33,7 @@ const initialForm = {
   mainConcerns: [], existingCoverage: blankAnswers(COVERAGE_ITEMS),
   currentInsurer: "", agentSatisfaction: "", consent: false,
 };
+const initialAgent = { agentName: "", agentId: "", agentEmail: "", gmName: "" };
 
 function PictureSpace({ label }) {
   return <div className="picture-space" aria-label={`${label} picture placeholder`}><span>Picture space</span></div>;
@@ -175,6 +176,8 @@ function YesNoGrid({ items, name, values, onChange }) {
 
 export default function App() {
   const [form, setForm] = useState(initialForm);
+  const [agent, setAgent] = useState(initialAgent);
+  const [agentDialogOpen, setAgentDialogOpen] = useState(false);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -191,23 +194,27 @@ export default function App() {
     ...current, [name]: { ...current[name], [item]: answer },
   }));
 
+  const requestAgentDetails = (event) => {
+    event.preventDefault();
+    if (!form.mainConcerns.length) return setStatus({ type: "error", message: "Please select at least one main concern." });
+    setStatus({ type: "", message: "" });
+    setAgentDialogOpen(true);
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     if (submittingRef.current) return;
-    if (!form.mainConcerns.length) return setStatus({ type: "error", message: "Please select at least one main concern." });
     submittingRef.current = true; setSubmitting(true); setStatus({ type: "loading", message: "Submitting your survey…" });
-    const now = new Date();
-    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     try {
-      const response = await fetch("/api/submit-lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date, ...form }) });
+      const response = await fetch("/api/submit-lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, ...agent }) });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.success !== true) throw new Error(result.error || "Unable to submit. Please try again.");
-      setForm(initialForm); setStatus({ type: "success", message: "Thank you — your survey was submitted successfully." });
+      setForm(initialForm); setAgent(initialAgent); setAgentDialogOpen(false); setStatus({ type: "success", message: "Thank you — your survey was submitted successfully." });
     } catch (error) { setStatus({ type: "error", message: error.message }); }
     finally { submittingRef.current = false; setSubmitting(false); }
   };
 
-  return <main className="page-shell"><form className="survey" onSubmit={submit}>
+  return <><main className="page-shell"><form className="survey" onSubmit={requestAgentDetails}>
     <header className="hero">
       <div><h1><em>Prenatal</em> &amp; Postnatal<br />Protection Check</h1><p>Helping you protect what matters most,<br />from today and for tomorrow. ♡</p></div>
       <div className="hero-family"><img src="/family-hero.png" alt="Parents holding their baby" /></div>
@@ -236,5 +243,18 @@ export default function App() {
     </div>
     <section className="consent-panel"><label className="choice"><input type="checkbox" name="consent" checked={form.consent} onChange={update} required /><span>I consent to the collection and use of my information for follow-up and advisory purposes. *</span></label></section>
     <footer><h2>♥ Thank you for your time! ♥</h2><p>We look forward to helping you and your family with the right protection.</p><button disabled={submitting}>{submitting ? "Submitting…" : "Submit Survey"}</button>{status.message && <p className={`status ${status.type}`} role="status">{status.message}</p>}</footer>
-  </form></main>;
+  </form></main>
+  {agentDialogOpen && <div className="modal-backdrop"><section className="agent-modal" role="dialog" aria-modal="true" aria-labelledby="agent-modal-title">
+    <h2 id="agent-modal-title">Agent Information</h2>
+    <p>Please complete these details before submitting the survey.</p>
+    <form onSubmit={submit}>
+      <label className="field"><span>Agent Name *</span><input value={agent.agentName} onChange={({ target }) => setAgent((current) => ({ ...current, agentName: target.value }))} maxLength="100" required autoFocus /></label>
+      <label className="field"><span>Agent ID *</span><input value={agent.agentId} onChange={({ target }) => setAgent((current) => ({ ...current, agentId: target.value }))} maxLength="50" required /></label>
+      <label className="field"><span>Agent Email *</span><input type="email" value={agent.agentEmail} onChange={({ target }) => setAgent((current) => ({ ...current, agentEmail: target.value }))} maxLength="150" required /></label>
+      <label className="field"><span>GM Name *</span><input value={agent.gmName} onChange={({ target }) => setAgent((current) => ({ ...current, gmName: target.value }))} maxLength="100" required /></label>
+      {status.message && <p className={`status ${status.type}`} role={status.type === "error" ? "alert" : "status"}>{status.message}</p>}
+      <div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setAgentDialogOpen(false)} disabled={submitting}>Back</button><button type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Confirm & Submit"}</button></div>
+    </form>
+  </section></div>}
+  </>;
 }
