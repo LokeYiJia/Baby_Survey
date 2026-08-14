@@ -31,6 +31,10 @@ export async function onRequest({ request, env }) {
     const agentEmail = text(data.agentEmail, "agentEmail", true, 150).toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agentEmail)) throw new Error("agentEmail is invalid.");
     const gmName = text(data.gmName, "gmName", true, 100);
+    const presentationDone = choice(data.presentationDone, "presentationDone", ["Yes", "No"]);
+    const potentialFollowUp = choice(data.potentialFollowUp, "potentialFollowUp", ["Yes", "No"]);
+    const onTheSpotCloseCase = choice(data.onTheSpotCloseCase, "onTheSpotCloseCase", ["Yes", "No"]);
+    const anp = text(data.anp, "anp", true, 50);
     if (data.consent !== true) throw new Error("consent must be true.");
     const payload = {
       fullName: text(data.fullName, "fullName", true), contactNumber: phone, icLast4,
@@ -39,6 +43,7 @@ export async function onRequest({ request, env }) {
       prenatalPreparedness: matrix(data.prenatalPreparedness, "prenatalPreparedness", PRENATAL_ITEMS), mainConcerns: checklist(data.mainConcerns, "mainConcerns", CONCERNS),
       existingCoverage: matrix(data.existingCoverage, "existingCoverage", COVERAGE_ITEMS), currentInsurer: text(data.currentInsurer, "currentInsurer"),
       agentSatisfaction: choice(data.agentSatisfaction, "agentSatisfaction", SATISFACTION),
+      presentationDone, potentialFollowUp, onTheSpotCloseCase, anp,
       agentName, agentId, agentEmail, gmName,
     };
     if (!env?.GOOGLE_SHEETS_WEBHOOK_URL) return json({ success: false, error: "Submission service is not configured." }, 500);

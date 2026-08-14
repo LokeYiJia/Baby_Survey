@@ -17,7 +17,13 @@ var EXPECTED_HEADERS = [
   "Existing Insurance Coverage",
   "Current Insurance Company",
   "Previous Insurance Agent Satisfaction",
-  "Submission Timestamp"
+  "Presentation Done",
+  "Potential Follow Up",
+  "On the Spot Close Case",
+  "ANP",
+  "Submission Timestamp",
+  "Submission ID",
+  "Email Sent Timestamp"
 ];
 
 function authorizeMailSending() {
@@ -39,6 +45,7 @@ function doPost(e) {
     verifyHeaders_(sheet);
 
     var submittedAt = new Date();
+    var submissionId = Utilities.getUuid();
     var row = [
       safeCell_(data.fullName),
       forcedTextCell_(data.contactNumber),
@@ -55,20 +62,29 @@ function doPost(e) {
       safeCell_(data.existingCoverage),
       safeCell_(data.currentInsurer),
       safeCell_(data.agentSatisfaction),
-      submittedAt
+      safeCell_(data.presentationDone),
+      safeCell_(data.potentialFollowUp),
+      safeCell_(data.onTheSpotCloseCase),
+      safeCell_(data.anp),
+      submittedAt,
+      submissionId,
+      ""
     ];
 
     var targetRow = sheet.getLastRow() + 1;
     sheet.getRange(targetRow, 2, 1, 2).setNumberFormat("@");
     sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
     sheet.getRange(targetRow, 2, 1, 2).setNumberFormat("@");
-    sheet.getRange(targetRow, 16).setNumberFormat("yyyy-mm-dd hh:mm:ss");
+    sheet.getRange(targetRow, 20).setNumberFormat("yyyy-mm-dd hh:mm:ss");
     SpreadsheetApp.flush();
 
     // The popup agent fields are used for routing but are intentionally not
-    // stored because the requested response sheet contains exactly 16 columns.
+    // stored because the requested response sheet contains only survey,
+    // outcome, and delivery-tracking columns.
     sendAgentEmail_(data, submittedAt);
-    return jsonResponse_({ success: true });
+    sheet.getRange(targetRow, 22).setValue(new Date()).setNumberFormat("yyyy-mm-dd hh:mm:ss");
+    SpreadsheetApp.flush();
+    return jsonResponse_({ success: true, submissionId: submissionId });
   } catch (error) {
     console.error(error && error.stack ? error.stack : error);
     return jsonResponse_({ success: false, error: "[" + SCRIPT_BUILD + "] " + (error && error.message ? error.message : "Unable to process survey.") });
@@ -98,6 +114,10 @@ function sendAgentEmail_(data, submittedAt) {
     ["Existing Insurance Coverage", data.existingCoverage],
     ["Current Insurance Company", data.currentInsurer],
     ["Previous Insurance Agent Satisfaction", data.agentSatisfaction],
+    ["Presentation Done", data.presentationDone],
+    ["Potential Follow Up", data.potentialFollowUp],
+    ["On the Spot Close Case", data.onTheSpotCloseCase],
+    ["ANP", data.anp],
     ["Submission Timestamp", Utilities.formatDate(submittedAt, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")],
     ["Agent Name", data.agentName],
     ["Agent ID", data.agentId],

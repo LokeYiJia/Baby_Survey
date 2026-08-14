@@ -43,7 +43,13 @@ Create a tab named exactly `Baby Survey Responses`. Put these exact headers in r
 13. Existing Insurance Coverage
 14. Current Insurance Company
 15. Previous Insurance Agent Satisfaction
-16. Submission Timestamp
+16. Presentation Done
+17. Potential Follow Up
+18. On the Spot Close Case
+19. ANP
+20. Submission Timestamp
+21. Submission ID
+22. Email Sent Timestamp
 
 ## Google Apps Script setup
 
@@ -57,7 +63,7 @@ The script generates the submission timestamp on the server using the spreadshee
 
 ## Agent email reports
 
-The final submission popup collects Agent Name, Agent ID, Agent Email, and GM Name. These values route the lead email but are not stored in the 16-column response sheet. Immediately after saving a response, Apps Script sends that lead to the supplied agent email.
+After the main form's first Submit button is pressed, a popup collects Agent Name, Agent ID, Agent Email, GM Name, and four follow-up questions: Presentation Done, Potential Follow Up, On the Spot Close Case, and ANP (Annual Premium). The agent details route the lead email but are not stored in the 22-column response sheet. The four outcome answers are stored. Immediately after saving a response, Apps Script sends that lead to the supplied agent email and records the email-sent timestamp.
 
 After installing `Code.gs`, run `authorizeMailSending` once in the Apps Script editor and approve the requested mail permission.
 

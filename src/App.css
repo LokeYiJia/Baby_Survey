@@ -83,6 +83,7 @@ input:focus-visible, button:focus-visible { outline: 3px solid #f0b53a; outline-
 .agent-modal > h2 { display: inline-block; margin: 0 0 8px; padding: 8px 14px; border-radius: 12px; color: white; background: #dc5168; font-size: 1.15rem; text-transform: uppercase; }
 .agent-modal > p { margin: 0 0 22px; font-size: .88rem; }
 .agent-modal .field { margin-bottom: 16px; }
+.modal-section-title { margin: 24px 0 14px; padding-top: 16px; border-top: 1px solid #e8cfd2; color: #d83236; font-size: 1rem; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .modal-actions button { min-width: 135px; margin: 0; }
 .secondary-button { color: #8b3341; border: 1px solid #dbaab2; background: white; box-shadow: none; }

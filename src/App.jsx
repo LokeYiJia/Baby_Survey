@@ -33,7 +33,10 @@ const initialForm = {
   mainConcerns: [], existingCoverage: blankAnswers(COVERAGE_ITEMS),
   currentInsurer: "", agentSatisfaction: "", consent: false,
 };
-const initialAgent = { agentName: "", agentId: "", agentEmail: "", gmName: "" };
+const initialAgent = {
+  agentName: "", agentId: "", agentEmail: "", gmName: "",
+  presentationDone: "", potentialFollowUp: "", onTheSpotCloseCase: "", anp: "",
+};
 
 function PictureSpace({ label }) {
   return <div className="picture-space" aria-label={`${label} picture placeholder`}><span>Picture space</span></div>;
@@ -245,13 +248,18 @@ export default function App() {
     <footer><h2>♥ Thank you for your time! ♥</h2><p>We look forward to helping you and your family with the right protection.</p><button disabled={submitting}>{submitting ? "Submitting…" : "Submit Survey"}</button>{status.message && <p className={`status ${status.type}`} role="status">{status.message}</p>}</footer>
   </form></main>
   {agentDialogOpen && <div className="modal-backdrop"><section className="agent-modal" role="dialog" aria-modal="true" aria-labelledby="agent-modal-title">
-    <h2 id="agent-modal-title">Agent Information</h2>
-    <p>Please complete these details before submitting the survey.</p>
+    <h2 id="agent-modal-title">Complete Submission</h2>
+    <p>Please complete the agent and follow-up details before submitting the survey.</p>
     <form onSubmit={submit}>
       <label className="field"><span>Agent Name *</span><input value={agent.agentName} onChange={({ target }) => setAgent((current) => ({ ...current, agentName: target.value }))} maxLength="100" required autoFocus /></label>
       <label className="field"><span>Agent ID *</span><input value={agent.agentId} onChange={({ target }) => setAgent((current) => ({ ...current, agentId: target.value }))} maxLength="50" required /></label>
       <label className="field"><span>Agent Email *</span><input type="email" value={agent.agentEmail} onChange={({ target }) => setAgent((current) => ({ ...current, agentEmail: target.value }))} maxLength="150" required /></label>
       <label className="field"><span>GM Name *</span><input value={agent.gmName} onChange={({ target }) => setAgent((current) => ({ ...current, gmName: target.value }))} maxLength="100" required /></label>
+      <h3 className="modal-section-title">Follow-up Outcome</h3>
+      <RadioGroup label="Presentation Done" name="presentationDone" options={["Yes", "No"]} value={agent.presentationDone} onChange={({ target }) => setAgent((current) => ({ ...current, presentationDone: target.value }))} />
+      <RadioGroup label="Potential Follow Up" name="potentialFollowUp" options={["Yes", "No"]} value={agent.potentialFollowUp} onChange={({ target }) => setAgent((current) => ({ ...current, potentialFollowUp: target.value }))} />
+      <RadioGroup label="On the Spot Close Case" name="onTheSpotCloseCase" options={["Yes", "No"]} value={agent.onTheSpotCloseCase} onChange={({ target }) => setAgent((current) => ({ ...current, onTheSpotCloseCase: target.value }))} />
+      <label className="field"><span>ANP (Annual Premium) *</span><input value={agent.anp} onChange={({ target }) => setAgent((current) => ({ ...current, anp: target.value }))} maxLength="50" placeholder="Enter annual premium" required /></label>
       {status.message && <p className={`status ${status.type}`} role={status.type === "error" ? "alert" : "status"}>{status.message}</p>}
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setAgentDialogOpen(false)} disabled={submitting}>Back</button><button type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Confirm & Submit"}</button></div>
     </form>
