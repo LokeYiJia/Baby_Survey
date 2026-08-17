@@ -72,9 +72,11 @@ function doPost(e) {
     ];
 
     var targetRow = sheet.getLastRow() + 1;
-    sheet.getRange(targetRow, 2, 1, 2).setNumberFormat("@");
+    sheet.getRange(targetRow, 2).setNumberFormat("@");
+    sheet.getRange(targetRow, 3).setNumberFormat("@");
     sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
-    sheet.getRange(targetRow, 2, 1, 2).setNumberFormat("@");
+    sheet.getRange(targetRow, 2).setNumberFormat("@");
+    sheet.getRange(targetRow, 3).setNumberFormat("@");
     sheet.getRange(targetRow, 20).setNumberFormat("yyyy-mm-dd hh:mm:ss");
     SpreadsheetApp.flush();
 
