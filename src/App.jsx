@@ -36,7 +36,7 @@ const initialForm = {
 const initialAgent = {
   agentName: "", agentId: "", agentEmail: "", gmName: "",
   presentationDone: "", potentialFollowUp: "", onTheSpotCloseCase: "", anp: "",
-  gaveOutGifts: "", remarks: "",
+  gaveOutGifts: "", giftDetails: "", remarks: "",
 };
 
 function PictureSpace({ label }) {
@@ -260,7 +260,8 @@ export default function App() {
       <RadioGroup label="Potential Follow Up" name="potentialFollowUp" options={["Yes", "No"]} value={agent.potentialFollowUp} onChange={({ target }) => setAgent((current) => ({ ...current, potentialFollowUp: target.value }))} />
       <RadioGroup label="On the Spot Close Case" name="onTheSpotCloseCase" options={["Yes", "No"]} value={agent.onTheSpotCloseCase} onChange={({ target }) => setAgent((current) => ({ ...current, onTheSpotCloseCase: target.value, anp: target.value === "Yes" ? current.anp : "" }))} />
       {agent.onTheSpotCloseCase === "Yes" && <label className="field"><span>ANP (Annual Premium) *</span><input value={agent.anp} onChange={({ target }) => setAgent((current) => ({ ...current, anp: target.value }))} maxLength="50" placeholder="Enter annual premium" required /></label>}
-      <RadioGroup label="Gave out Gifts?" name="gaveOutGifts" options={["Yes", "No"]} value={agent.gaveOutGifts} onChange={({ target }) => setAgent((current) => ({ ...current, gaveOutGifts: target.value }))} />
+      <RadioGroup label="Gave out Gifts?" name="gaveOutGifts" options={["Yes", "No"]} value={agent.gaveOutGifts} onChange={({ target }) => setAgent((current) => ({ ...current, gaveOutGifts: target.value, giftDetails: target.value === "Yes" ? current.giftDetails : "" }))} />
+      {agent.gaveOutGifts === "Yes" && <label className="field"><span>Gift Details *</span><input value={agent.giftDetails} onChange={({ target }) => setAgent((current) => ({ ...current, giftDetails: target.value }))} maxLength="150" placeholder="Enter the gift given" required /></label>}
       <label className="field"><span>Remarks</span><textarea value={agent.remarks} onChange={({ target }) => setAgent((current) => ({ ...current, remarks: target.value }))} maxLength="500" rows="3" placeholder="Add any relevant remarks" /></label>
       {status.message && <p className={`status ${status.type}`} role={status.type === "error" ? "alert" : "status"}>{status.message}</p>}
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setAgentDialogOpen(false)} disabled={submitting}>Back</button><button type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Confirm & Submit"}</button></div>

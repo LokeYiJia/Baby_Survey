@@ -8,7 +8,7 @@ const prenatalPreparedness = {
   "Emergency cesarean section for early delivery": "Yes",
 };
 const existingCoverage = { "Medical card": "Yes", "Life insurance": "Yes", "Critical illness plan": "No", "Investment / savings plan": "No", "Baby insurance plan": "No" };
-const valid = () => ({ fullName: "Alex Tan", contactNumber: "0123456789", icLast4: "0123", ageBand: "25–30", occupation: "Designer", currentStage: "Currently pregnant", pregnancyWeek: "20", expectedDueDate: "2026-12-20", babyAge: "", numberOfChildren: "0 (First child on the way / planning)", prenatalPreparedness: { ...prenatalPreparedness }, mainConcerns: ["Baby hospitalization expenses"], existingCoverage: { ...existingCoverage }, currentInsurer: "Great Eastern", agentSatisfaction: "Satisfied", consent: true, presentationDone: "Yes", potentialFollowUp: "Yes", onTheSpotCloseCase: "No", anp: "", gaveOutGifts: "Yes", remarks: "Requested a follow-up call.", agentName: "Jamie Lim", agentId: "A123", agentEmail: "jamie@example.com", gmName: "Morgan Lee" });
+const valid = () => ({ fullName: "Alex Tan", contactNumber: "0123456789", icLast4: "0123", ageBand: "25–30", occupation: "Designer", currentStage: "Currently pregnant", pregnancyWeek: "20", expectedDueDate: "2026-12-20", babyAge: "", numberOfChildren: "0 (First child on the way / planning)", prenatalPreparedness: { ...prenatalPreparedness }, mainConcerns: ["Baby hospitalization expenses"], existingCoverage: { ...existingCoverage }, currentInsurer: "Great Eastern", agentSatisfaction: "Satisfied", consent: true, presentationDone: "Yes", potentialFollowUp: "Yes", onTheSpotCloseCase: "No", anp: "", gaveOutGifts: "Yes", giftDetails: "Baby care gift set", remarks: "Requested a follow-up call.", agentName: "Jamie Lim", agentId: "A123", agentEmail: "jamie@example.com", gmName: "Morgan Lee" });
 const call = (payload = valid(), env = { GOOGLE_SHEETS_WEBHOOK_URL: "https://script.google.test/exec" }) => onRequest({ request: new Request("https://example.test/api/submit-lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }), env });
 
 test("accepts and forwards a valid survey", async (t) => {
@@ -38,6 +38,16 @@ test("requires ANP only for an on-the-spot close", async (t) => {
   assert.equal((await call(closed)).status, 400);
   const notClosed = valid(); notClosed.onTheSpotCloseCase = "No"; notClosed.anp = "ignored";
   const response = await call(notClosed); assert.equal(response.status, 200);
+});
+
+test("requires gift details only when gifts were given", async (t) => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('{"success":true}', { headers: { "Content-Type": "application/json" } });
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const withGift = valid(); withGift.giftDetails = "";
+  assert.equal((await call(withGift)).status, 400);
+  const withoutGift = valid(); withoutGift.gaveOutGifts = "No"; withoutGift.giftDetails = "ignored";
+  assert.equal((await call(withoutGift)).status, 200);
 });
 
 test("accepts sections 2 through 8 when left blank", async (t) => {

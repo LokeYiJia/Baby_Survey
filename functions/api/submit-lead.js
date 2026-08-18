@@ -37,6 +37,7 @@ export async function onRequest({ request, env }) {
     const onTheSpotCloseCase = choice(data.onTheSpotCloseCase, "onTheSpotCloseCase", ["Yes", "No"]);
     const anp = text(data.anp, "anp", onTheSpotCloseCase === "Yes", 50);
     const gaveOutGifts = choice(data.gaveOutGifts, "gaveOutGifts", ["Yes", "No"]);
+    const giftDetails = text(data.giftDetails, "giftDetails", gaveOutGifts === "Yes", 150);
     const remarks = text(data.remarks, "remarks", false, 500);
     if (data.consent !== true) throw new Error("consent must be true.");
     const payload = {
@@ -46,7 +47,7 @@ export async function onRequest({ request, env }) {
       prenatalPreparedness: optionalMatrix(data.prenatalPreparedness, "prenatalPreparedness", PRENATAL_ITEMS), mainConcerns: optionalChecklist(data.mainConcerns, "mainConcerns", CONCERNS),
       existingCoverage: optionalMatrix(data.existingCoverage, "existingCoverage", COVERAGE_ITEMS), currentInsurer: text(data.currentInsurer, "currentInsurer"),
       agentSatisfaction: optionalChoice(data.agentSatisfaction, "agentSatisfaction", SATISFACTION),
-      presentationDone, potentialFollowUp, onTheSpotCloseCase, anp: onTheSpotCloseCase === "Yes" ? anp : "", gaveOutGifts, remarks,
+      presentationDone, potentialFollowUp, onTheSpotCloseCase, anp: onTheSpotCloseCase === "Yes" ? anp : "", gaveOutGifts, giftDetails: gaveOutGifts === "Yes" ? giftDetails : "", remarks,
       agentName, agentId, agentEmail, gmName,
     };
     if (!env?.GOOGLE_SHEETS_WEBHOOK_URL) return json({ success: false, error: "Submission service is not configured." }, 500);

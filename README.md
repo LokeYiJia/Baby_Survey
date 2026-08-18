@@ -48,10 +48,11 @@ Create a tab named exactly `Baby Survey Responses`. Put these exact headers in r
 18. On the Spot Close Case
 19. ANP
 20. Gave out Gifts?
-21. Remarks
-22. Submission Timestamp
-23. Submission ID
-24. Email Sent Timestamp
+21. Gift Details
+22. Remarks
+23. Submission Timestamp
+24. Submission ID
+25. Email Sent Timestamp
 
 ## Google Apps Script setup
 
@@ -65,9 +66,9 @@ The script generates the submission timestamp on the server using the spreadshee
 
 ## Agent email reports
 
-After the main form's first Submit button is pressed, a popup collects Agent Name, Agent ID, Agent Email, GM Name, and follow-up questions. ANP (Annual Premium) appears and becomes required only when On the Spot Close Case is Yes. Gave out Gifts? is required; Remarks is optional. The agent details route the lead email but are not stored in the 24-column response sheet. Immediately after saving a response, Apps Script sends that lead to the supplied agent email and records the email-sent timestamp.
+After the main form's first Submit button is pressed, a popup collects Agent Name, Agent ID, Agent Email, GM Name, and follow-up questions. ANP (Annual Premium) appears and becomes required only when On the Spot Close Case is Yes. Gift Details appears and becomes required only when Gave out Gifts? is Yes. Remarks is optional. Agent routing is stored privately in Apps Script properties under the generated Submission ID, so the response sheet remains exactly 25 columns.
 
-After installing `Code.gs`, run `authorizeMailSending` once in the Apps Script editor and approve the requested mail permission.
+After installing `Code.gs`, run `authorizeMailSending` once in the Apps Script editor and approve the requested mail permission. Reload the spreadsheet to reveal **Agent Reports → Send unsent Baby Fair reports**. The command groups unsent leads by agent, sends one consolidated email to each agent, records `Email Sent Timestamp`, and removes the private routing record after successful delivery. Rows already stamped as sent are skipped.
 
 Email sending uses the deploying Google account's Apps Script daily recipient quota.
 
