@@ -47,9 +47,11 @@ Create a tab named exactly `Baby Survey Responses`. Put these exact headers in r
 17. Potential Follow Up
 18. On the Spot Close Case
 19. ANP
-20. Submission Timestamp
-21. Submission ID
-22. Email Sent Timestamp
+20. Gave out Gifts?
+21. Remarks
+22. Submission Timestamp
+23. Submission ID
+24. Email Sent Timestamp
 
 ## Google Apps Script setup
 
@@ -63,7 +65,7 @@ The script generates the submission timestamp on the server using the spreadshee
 
 ## Agent email reports
 
-After the main form's first Submit button is pressed, a popup collects Agent Name, Agent ID, Agent Email, GM Name, and four follow-up questions: Presentation Done, Potential Follow Up, On the Spot Close Case, and ANP (Annual Premium). The agent details route the lead email but are not stored in the 22-column response sheet. The four outcome answers are stored. Immediately after saving a response, Apps Script sends that lead to the supplied agent email and records the email-sent timestamp.
+After the main form's first Submit button is pressed, a popup collects Agent Name, Agent ID, Agent Email, GM Name, and follow-up questions. ANP (Annual Premium) appears and becomes required only when On the Spot Close Case is Yes. Gave out Gifts? is required; Remarks is optional. The agent details route the lead email but are not stored in the 24-column response sheet. Immediately after saving a response, Apps Script sends that lead to the supplied agent email and records the email-sent timestamp.
 
 After installing `Code.gs`, run `authorizeMailSending` once in the Apps Script editor and approve the requested mail permission.
 

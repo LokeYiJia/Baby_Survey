@@ -21,6 +21,8 @@ var EXPECTED_HEADERS = [
   "Potential Follow Up",
   "On the Spot Close Case",
   "ANP",
+  "Gave out Gifts?",
+  "Remarks",
   "Submission Timestamp",
   "Submission ID",
   "Email Sent Timestamp"
@@ -66,6 +68,8 @@ function doPost(e) {
       safeCell_(data.potentialFollowUp),
       safeCell_(data.onTheSpotCloseCase),
       safeCell_(data.anp),
+      safeCell_(data.gaveOutGifts),
+      safeCell_(data.remarks),
       submittedAt,
       submissionId,
       ""
@@ -77,14 +81,14 @@ function doPost(e) {
     sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
     sheet.getRange(targetRow, 2).setNumberFormat("@");
     sheet.getRange(targetRow, 3).setNumberFormat("@");
-    sheet.getRange(targetRow, 20).setNumberFormat("yyyy-mm-dd hh:mm:ss");
+    sheet.getRange(targetRow, 22).setNumberFormat("yyyy-mm-dd hh:mm:ss");
     SpreadsheetApp.flush();
 
     // The popup agent fields are used for routing but are intentionally not
     // stored because the requested response sheet contains only survey,
     // outcome, and delivery-tracking columns.
     sendAgentEmail_(data, submittedAt);
-    sheet.getRange(targetRow, 22).setValue(new Date()).setNumberFormat("yyyy-mm-dd hh:mm:ss");
+    sheet.getRange(targetRow, 24).setValue(new Date()).setNumberFormat("yyyy-mm-dd hh:mm:ss");
     SpreadsheetApp.flush();
     return jsonResponse_({ success: true, submissionId: submissionId });
   } catch (error) {
@@ -120,6 +124,8 @@ function sendAgentEmail_(data, submittedAt) {
     ["Potential Follow Up", data.potentialFollowUp],
     ["On the Spot Close Case", data.onTheSpotCloseCase],
     ["ANP", data.anp],
+    ["Gave out Gifts?", data.gaveOutGifts],
+    ["Remarks", data.remarks],
     ["Submission Timestamp", Utilities.formatDate(submittedAt, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")],
     ["Agent Name", data.agentName],
     ["Agent ID", data.agentId],

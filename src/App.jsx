@@ -36,6 +36,7 @@ const initialForm = {
 const initialAgent = {
   agentName: "", agentId: "", agentEmail: "", gmName: "",
   presentationDone: "", potentialFollowUp: "", onTheSpotCloseCase: "", anp: "",
+  gaveOutGifts: "", remarks: "",
 };
 
 function PictureSpace({ label }) {
@@ -148,31 +149,31 @@ function RadioGroup({ label, name, options, value, onChange, required = true, ve
 }
 
 function StageSelector({ value, onChange }) {
-  return <fieldset className="stage-selector"><legend>Current Stage (Please tick) *</legend><div className="stage-options">
+  return <fieldset className="stage-selector"><legend>Current Stage (Please tick)</legend><div className="stage-options">
     {STAGES.map((option) => <label className="stage-option" key={option}>
       <img src={STAGE_IMAGES[option]} alt="" aria-hidden="true" />
-      <span className="stage-choice"><input className="square-radio" type="radio" name="currentStage" value={option} checked={value === option} onChange={onChange} required /><span>{option}</span></span>
+      <span className="stage-choice"><input className="square-radio" type="radio" name="currentStage" value={option} checked={value === option} onChange={onChange} /><span>{option}</span></span>
     </label>)}
   </div></fieldset>;
 }
 
 function SatisfactionSelector({ value, onChange }) {
-  return <fieldset className="satisfaction-selector"><legend>Are you satisfied with the service by your previous insurance agent? *</legend>
+  return <fieldset className="satisfaction-selector"><legend>Are you satisfied with the service by your previous insurance agent?</legend>
     <div className="satisfaction-options">{SATISFACTION.map((option) => <label key={option}>
       {option === "Very dissatisfied" && <span className="satisfaction-emoji very-dissatisfied" aria-hidden="true" />}
       {option === "Dissatisfied" && <img className="rating-emoji" src="/rating-dissatisfied.png" alt="" aria-hidden="true" />}
       {option === "Neutral" && <span className="satisfaction-emoji neutral" aria-hidden="true" />}
       {option === "Satisfied" && <span className="satisfaction-emoji satisfied" aria-hidden="true" />}
       {option === "Very satisfied" && <span className="satisfaction-emoji very-satisfied" aria-hidden="true" />}
-      <span>{option}</span><input className="square-radio" type="radio" name="agentSatisfaction" value={option} checked={value === option} onChange={onChange} required />
+      <span>{option}</span><input className="square-radio" type="radio" name="agentSatisfaction" value={option} checked={value === option} onChange={onChange} />
     </label>)}</div>
   </fieldset>;
 }
 
-function YesNoGrid({ items, name, values, onChange }) {
+function YesNoGrid({ items, name, values, onChange, required = false }) {
   return <div className="matrix"><div className="matrix-head"><span>Have you prepared any of the following?</span><span>Yes</span><span>No</span></div>
     {items.map((item) => <div className="matrix-row" key={item}><span>{item}</span>{["Yes", "No"].map((answer) =>
-      <label key={answer}><input type="radio" name={`${name}-${item}`} value={answer} checked={values[item] === answer} onChange={() => onChange(name, item, answer)} required /><span className="sr-only">{answer}</span></label>
+      <label key={answer}><input type="radio" name={`${name}-${item}`} value={answer} checked={values[item] === answer} onChange={() => onChange(name, item, answer)} required={required} /><span className="sr-only">{answer}</span></label>
     )}</div>)}
   </div>;
 }
@@ -199,7 +200,6 @@ export default function App() {
 
   const requestAgentDetails = (event) => {
     event.preventDefault();
-    if (!form.mainConcerns.length) return setStatus({ type: "error", message: "Please select at least one main concern." });
     setStatus({ type: "", message: "" });
     setAgentDialogOpen(true);
   };
@@ -233,13 +233,13 @@ export default function App() {
       <Card number="2" title="Pregnancy / Baby Information" tone="coral">
         <StageSelector value={form.currentStage} onChange={update} />
         <div className="stage-details">
-          <div className="conditional"><h3>If Pregnant</h3><label className="field"><span>Current Week of Pregnancy{form.currentStage === "Currently pregnant" && " *"}</span><input type="number" name="pregnancyWeek" min="1" max="45" value={form.pregnancyWeek} onChange={update} required={form.currentStage === "Currently pregnant"} /></label><label className="field"><span>Expected Due Date{form.currentStage === "Currently pregnant" && " *"}</span><input type="date" name="expectedDueDate" value={form.expectedDueDate} onChange={update} required={form.currentStage === "Currently pregnant"} /></label></div>
-          <div className="conditional"><h3>If Baby is Born</h3><label className="field"><span>Baby’s Age{form.currentStage === "Postnatal / newborn stage" && " *"}</span><input name="babyAge" value={form.babyAge} onChange={update} maxLength="50" required={form.currentStage === "Postnatal / newborn stage"} /></label></div>
+          <div className="conditional"><h3>If Pregnant</h3><label className="field"><span>Current Week of Pregnancy</span><input type="number" name="pregnancyWeek" min="1" max="45" value={form.pregnancyWeek} onChange={update} /></label><label className="field"><span>Expected Due Date</span><input type="date" name="expectedDueDate" value={form.expectedDueDate} onChange={update} /></label></div>
+          <div className="conditional"><h3>If Baby is Born</h3><label className="field"><span>Baby’s Age</span><input name="babyAge" value={form.babyAge} onChange={update} maxLength="50" /></label></div>
         </div>
       </Card>
-      <Card number="3" title="Number of Children" tone="blue"><RadioGroup label="How many children do you have? (Including current pregnancy)" name="numberOfChildren" options={CHILD_COUNTS} value={form.numberOfChildren} onChange={update} vertical /></Card>
+      <Card number="3" title="Number of Children" tone="blue"><RadioGroup label="How many children do you have? (Including current pregnancy)" name="numberOfChildren" options={CHILD_COUNTS} value={form.numberOfChildren} onChange={update} vertical required={false} /></Card>
       <Card number="4" title="Prenatal Protection Check" tone="green"><YesNoGrid items={PRENATAL_ITEMS} name="prenatalPreparedness" values={form.prenatalPreparedness} onChange={updateMatrix} /></Card>
-      <Card number="5" title="Main Concerns" tone="gold" picture><fieldset><legend>What are your biggest concerns currently? (You may tick more than one) *</legend><div className="stacked">{CONCERNS.map((item) => <label className="choice" key={item}><input type="checkbox" value={item} checked={form.mainConcerns.includes(item)} onChange={updateConcerns} /><span>{item}</span></label>)}</div></fieldset></Card>
+      <Card number="5" title="Main Concerns" tone="gold" picture><fieldset><legend>What are your biggest concerns currently? (You may tick more than one)</legend><div className="stacked">{CONCERNS.map((item) => <label className="choice" key={item}><input type="checkbox" value={item} checked={form.mainConcerns.includes(item)} onChange={updateConcerns} /><span>{item}</span></label>)}</div></fieldset></Card>
       <Card number="6" title="Existing Insurance Coverage" tone="purple"><YesNoGrid items={COVERAGE_ITEMS} name="existingCoverage" values={form.existingCoverage} onChange={updateMatrix} /></Card>
       <Card number="7" title="Your Current Policy" tone="teal"><label className="field"><span>Your current policy is under which insurance company?</span><input name="currentInsurer" value={form.currentInsurer} onChange={update} maxLength="100" /></label></Card>
       <Card number="8" title="Previous Insurance Agent Satisfaction" tone="pink"><SatisfactionSelector value={form.agentSatisfaction} onChange={update} /></Card>
@@ -258,8 +258,10 @@ export default function App() {
       <h3 className="modal-section-title">Follow-up Outcome</h3>
       <RadioGroup label="Presentation Done" name="presentationDone" options={["Yes", "No"]} value={agent.presentationDone} onChange={({ target }) => setAgent((current) => ({ ...current, presentationDone: target.value }))} />
       <RadioGroup label="Potential Follow Up" name="potentialFollowUp" options={["Yes", "No"]} value={agent.potentialFollowUp} onChange={({ target }) => setAgent((current) => ({ ...current, potentialFollowUp: target.value }))} />
-      <RadioGroup label="On the Spot Close Case" name="onTheSpotCloseCase" options={["Yes", "No"]} value={agent.onTheSpotCloseCase} onChange={({ target }) => setAgent((current) => ({ ...current, onTheSpotCloseCase: target.value }))} />
-      <label className="field"><span>ANP (Annual Premium) *</span><input value={agent.anp} onChange={({ target }) => setAgent((current) => ({ ...current, anp: target.value }))} maxLength="50" placeholder="Enter annual premium" required /></label>
+      <RadioGroup label="On the Spot Close Case" name="onTheSpotCloseCase" options={["Yes", "No"]} value={agent.onTheSpotCloseCase} onChange={({ target }) => setAgent((current) => ({ ...current, onTheSpotCloseCase: target.value, anp: target.value === "Yes" ? current.anp : "" }))} />
+      {agent.onTheSpotCloseCase === "Yes" && <label className="field"><span>ANP (Annual Premium) *</span><input value={agent.anp} onChange={({ target }) => setAgent((current) => ({ ...current, anp: target.value }))} maxLength="50" placeholder="Enter annual premium" required /></label>}
+      <RadioGroup label="Gave out Gifts?" name="gaveOutGifts" options={["Yes", "No"]} value={agent.gaveOutGifts} onChange={({ target }) => setAgent((current) => ({ ...current, gaveOutGifts: target.value }))} />
+      <label className="field"><span>Remarks</span><textarea value={agent.remarks} onChange={({ target }) => setAgent((current) => ({ ...current, remarks: target.value }))} maxLength="500" rows="3" placeholder="Add any relevant remarks" /></label>
       {status.message && <p className={`status ${status.type}`} role={status.type === "error" ? "alert" : "status"}>{status.message}</p>}
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setAgentDialogOpen(false)} disabled={submitting}>Back</button><button type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Confirm & Submit"}</button></div>
     </form>

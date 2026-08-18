@@ -10,8 +10,9 @@ const SATISFACTION = ["Very satisfied", "Satisfied", "Neutral", "Dissatisfied", 
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
 const text = (value, field, required = false, max = 100) => { if (typeof value !== "string") throw new Error(`${field} must be text.`); const v = value.trim(); if (required && !v) throw new Error(`${field} is required.`); if (v.length > max) throw new Error(`${field} is too long.`); return v; };
 const choice = (value, field, options) => { const v = text(value, field, true, 100); if (!options.includes(v)) throw new Error(`${field} is invalid.`); return v; };
-const checklist = (value, field, options) => { if (!Array.isArray(value) || !value.length || value.length > options.length || value.some((v) => !options.includes(v)) || new Set(value).size !== value.length) throw new Error(`${field} is invalid.`); return value.join(", "); };
-const matrix = (value, field, items) => { if (!value || Array.isArray(value) || typeof value !== "object" || items.some((item) => !["Yes", "No"].includes(value[item]))) throw new Error(`${field} is incomplete.`); return items.map((item) => `${item}: ${value[item]}`).join(" | "); };
+const optionalChoice = (value, field, options) => { const v = text(value, field, false, 100); if (v && !options.includes(v)) throw new Error(`${field} is invalid.`); return v; };
+const optionalChecklist = (value, field, options) => { if (!Array.isArray(value) || value.length > options.length || value.some((v) => !options.includes(v)) || new Set(value).size !== value.length) throw new Error(`${field} is invalid.`); return value.join(", "); };
+const optionalMatrix = (value, field, items) => { if (!value || Array.isArray(value) || typeof value !== "object" || Object.entries(value).some(([item, answer]) => !items.includes(item) || (answer && !["Yes", "No"].includes(answer)))) throw new Error(`${field} is invalid.`); return items.filter((item) => value[item]).map((item) => `${item}: ${value[item]}`).join(" | "); };
 
 export async function onRequest({ request, env }) {
   if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405);
@@ -20,12 +21,12 @@ export async function onRequest({ request, env }) {
   try { const body = await request.text(); if (new TextEncoder().encode(body).byteLength > MAX_BODY_BYTES) return json({ success: false, error: "Request body is too large." }, 413); data = JSON.parse(body); if (!data || Array.isArray(data) || typeof data !== "object") throw new Error("Request body must be an object."); }
   catch (error) { return json({ success: false, error: error.message || "Invalid JSON." }, 400); }
   try {
-    const stage = choice(data.currentStage, "currentStage", STAGES);
+    const stage = optionalChoice(data.currentStage, "currentStage", STAGES);
     const phone = text(data.contactNumber, "contactNumber", true, 25); if (!/^[+\d()\s-]+$/.test(phone) || !/^\d{8,15}$/.test(phone.replace(/\D/g, ""))) throw new Error("contactNumber is invalid.");
     const icLast4 = text(data.icLast4, "icLast4", true, 4); if (!/^\d{4}$/.test(icLast4)) throw new Error("icLast4 must contain exactly 4 digits.");
-    const week = text(data.pregnancyWeek, "pregnancyWeek", false, 2); if (stage === "Currently pregnant" && (!/^\d{1,2}$/.test(week) || +week < 1 || +week > 45)) throw new Error("pregnancyWeek is invalid.");
-    const due = text(data.expectedDueDate, "expectedDueDate", false, 10); if (stage === "Currently pregnant" && !/^\d{4}-\d{2}-\d{2}$/.test(due)) throw new Error("expectedDueDate is required.");
-    const babyAge = text(data.babyAge, "babyAge", false, 50); if (stage === "Postnatal / newborn stage" && !babyAge) throw new Error("babyAge is required.");
+    const week = text(data.pregnancyWeek, "pregnancyWeek", false, 2); if (week && (!/^\d{1,2}$/.test(week) || +week < 1 || +week > 45)) throw new Error("pregnancyWeek is invalid.");
+    const due = text(data.expectedDueDate, "expectedDueDate", false, 10); if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) throw new Error("expectedDueDate is invalid.");
+    const babyAge = text(data.babyAge, "babyAge", false, 50);
     const agentName = text(data.agentName, "agentName", true, 100);
     const agentId = text(data.agentId, "agentId", true, 50);
     const agentEmail = text(data.agentEmail, "agentEmail", true, 150).toLowerCase();
@@ -34,16 +35,18 @@ export async function onRequest({ request, env }) {
     const presentationDone = choice(data.presentationDone, "presentationDone", ["Yes", "No"]);
     const potentialFollowUp = choice(data.potentialFollowUp, "potentialFollowUp", ["Yes", "No"]);
     const onTheSpotCloseCase = choice(data.onTheSpotCloseCase, "onTheSpotCloseCase", ["Yes", "No"]);
-    const anp = text(data.anp, "anp", true, 50);
+    const anp = text(data.anp, "anp", onTheSpotCloseCase === "Yes", 50);
+    const gaveOutGifts = choice(data.gaveOutGifts, "gaveOutGifts", ["Yes", "No"]);
+    const remarks = text(data.remarks, "remarks", false, 500);
     if (data.consent !== true) throw new Error("consent must be true.");
     const payload = {
       fullName: text(data.fullName, "fullName", true), contactNumber: phone, icLast4,
       ageBand: choice(data.ageBand, "ageBand", AGE_BANDS), occupation: text(data.occupation, "occupation"), currentStage: stage,
-      pregnancyWeek: week, expectedDueDate: due, babyAge, numberOfChildren: choice(data.numberOfChildren, "numberOfChildren", CHILD_COUNTS),
-      prenatalPreparedness: matrix(data.prenatalPreparedness, "prenatalPreparedness", PRENATAL_ITEMS), mainConcerns: checklist(data.mainConcerns, "mainConcerns", CONCERNS),
-      existingCoverage: matrix(data.existingCoverage, "existingCoverage", COVERAGE_ITEMS), currentInsurer: text(data.currentInsurer, "currentInsurer"),
-      agentSatisfaction: choice(data.agentSatisfaction, "agentSatisfaction", SATISFACTION),
-      presentationDone, potentialFollowUp, onTheSpotCloseCase, anp,
+      pregnancyWeek: week, expectedDueDate: due, babyAge, numberOfChildren: optionalChoice(data.numberOfChildren, "numberOfChildren", CHILD_COUNTS),
+      prenatalPreparedness: optionalMatrix(data.prenatalPreparedness, "prenatalPreparedness", PRENATAL_ITEMS), mainConcerns: optionalChecklist(data.mainConcerns, "mainConcerns", CONCERNS),
+      existingCoverage: optionalMatrix(data.existingCoverage, "existingCoverage", COVERAGE_ITEMS), currentInsurer: text(data.currentInsurer, "currentInsurer"),
+      agentSatisfaction: optionalChoice(data.agentSatisfaction, "agentSatisfaction", SATISFACTION),
+      presentationDone, potentialFollowUp, onTheSpotCloseCase, anp: onTheSpotCloseCase === "Yes" ? anp : "", gaveOutGifts, remarks,
       agentName, agentId, agentEmail, gmName,
     };
     if (!env?.GOOGLE_SHEETS_WEBHOOK_URL) return json({ success: false, error: "Submission service is not configured." }, 500);
